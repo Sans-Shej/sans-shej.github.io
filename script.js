@@ -111,7 +111,7 @@ const portraitCanvas = document.getElementById('portraitCanvas');
 const portraitContext = portraitCanvas.getContext('2d');
 const portraitPoints = [];
 const portraitImage = new Image();
-portraitImage.src = 'IMG_20210818_183920_091.jpg';
+portraitImage.src = 'claude 2/IMG_20210818_183920_091.jpg';
 let portraitPointer = { x: 0.5, y: 0.5 };
 
 function createPortrait() {
@@ -127,16 +127,23 @@ function createPortrait() {
   const sampleContext = sampleCanvas.getContext('2d', { willReadFrequently: true });
   sampleCanvas.width = size;
   sampleCanvas.height = size;
-  const sourceSize = Math.min(portraitImage.naturalWidth, portraitImage.naturalHeight);
-  const sourceX = (portraitImage.naturalWidth - sourceSize) * 0.5;
-  const sourceY = Math.max(0, portraitImage.naturalHeight * 0.23);
-  sampleContext.drawImage(portraitImage, sourceX, sourceY, sourceSize, sourceSize, 0, 0, size, size);
-  const pixels = sampleContext.getImageData(0, 0, size, size).data;
+  const hasPortraitImage = portraitImage.complete && portraitImage.naturalWidth > 0;
+  let pixels = null;
+  if (hasPortraitImage) {
+    const sourceSize = Math.min(portraitImage.naturalWidth, portraitImage.naturalHeight);
+    const sourceX = (portraitImage.naturalWidth - sourceSize) * 0.5;
+    const sourceY = Math.max(0, portraitImage.naturalHeight * 0.23);
+    sampleContext.drawImage(portraitImage, sourceX, sourceY, sourceSize, sourceSize, 0, 0, size, size);
+    pixels = sampleContext.getImageData(0, 0, size, size).data;
+  }
   for (let y = spacing; y < size; y += spacing) {
     for (let x = spacing; x < size; x += spacing) {
       const pixelIndex = (y * size + x) * 4;
-      const brightness = (pixels[pixelIndex] + pixels[pixelIndex + 1] + pixels[pixelIndex + 2]) / 3;
-      const detail = brightness < 218 || y > size * 0.48;
+      const brightness = pixels ? (pixels[pixelIndex] + pixels[pixelIndex + 1] + pixels[pixelIndex + 2]) / 3 : 120;
+      const nx = (x - size / 2) / (size / 2);
+      const ny = (y - size * 0.52) / (size / 2);
+      const fallbackShape = Math.pow(nx / 0.62, 2) + Math.pow((ny + 0.02) / 0.9, 2) < 1 || y > size * 0.72;
+      const detail = pixels ? brightness < 218 || y > size * 0.48 : fallbackShape;
       if (detail) portraitPoints.push({ x, y, brightness });
     }
   }
@@ -165,5 +172,6 @@ portraitCanvas.addEventListener('pointermove', event => {
 portraitCanvas.addEventListener('pointerleave', () => { portraitPointer = { x: 0.5, y: 0.5 }; });
 window.addEventListener('resize', createPortrait);
 portraitImage.addEventListener('load', createPortrait);
+portraitImage.addEventListener('error', createPortrait);
 if (portraitImage.complete) createPortrait();
 drawPortrait();
