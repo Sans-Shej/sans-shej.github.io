@@ -123,6 +123,8 @@ h1, h2, h3, h4 { color: var(--lightest-slate); font-weight: 600; margin: 0; }
 .side-icons { list-style: none; margin: 0 0 20px; padding: 0; display: flex; flex-direction: column; gap: 18px; }
 .side-icons a { color: var(--light-slate); transition: color 0.2s ease, transform 0.2s ease; display: block; }
 .side-icons a:hover { color: var(--green); transform: translateY(-3px); }
+.scholar-mark { display: inline-block; font-family: var(--font-mono); font-size: 15px; font-weight: 700; letter-spacing: -0.08em; }
+.scholar-mark span { color: var(--green); }
 
 /* ============================================
    Layout
